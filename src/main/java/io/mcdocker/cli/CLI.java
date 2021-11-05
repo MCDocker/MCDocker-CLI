@@ -1,30 +1,36 @@
 package io.mcdocker.cli;
 
-import io.mcdocker.cli.commands.containers.Container;
+import io.mcdocker.cli.commands.ContainerCommand;
+import io.mcdocker.launcher.MCDocker;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
-import java.util.concurrent.Callable;
-
 @Command(
-//        name = "mcdocker",
-//        description = "A command line interface for managing MCDocker containers",
-//        version = "0.0.1",
-//        mixinStandardHelpOptions = true
+        description = "A command line interface for managing MCDocker containers",
+        mixinStandardHelpOptions = true,
+        name = "mcdocker"
 )
 public class CLI implements Runnable {
 
-    public static void main(String[] args) {
-        CommandLine cli = new CommandLine(new CLI());
+    private static final CommandLine cli = new CommandLine(new CLI());
+    private static final String version = "0.0.1";
+    public static String getVersion() {return version;}
 
-        cli.addSubcommand(new Container());
+    public static void main(String[] args) {
+        cli.addSubcommand(new ContainerCommand());
 
         int exitCode = cli.execute(args);
         System.exit(exitCode);
     }
 
+    @Command(name = "version", description = "Prints the MCDocker and CLI version")
+    public void version() {
+        System.out.println("CLI " + version);
+        System.out.println("MCDocker " + MCDocker.getVersion());
+    }
+
     @Override
     public void run() {
-        System.out.println("Hello, world!");
+        System.out.println("MCDocker-CLI - A command line interface for MCDocker");
     }
 }
