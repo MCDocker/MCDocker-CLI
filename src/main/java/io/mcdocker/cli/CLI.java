@@ -1,6 +1,7 @@
 package io.mcdocker.cli;
 
-import io.mcdocker.cli.commands.ContainerCommand;
+import io.mcdocker.cli.commands.accounts.Accounts;
+import io.mcdocker.cli.commands.containers.ContainerCommand;
 import io.mcdocker.launcher.MCDocker;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -18,6 +19,7 @@ public class CLI implements Runnable {
 
     public static void main(String[] args) {
         cli.addSubcommand(new ContainerCommand());
+        cli.addSubcommand(new Accounts());
 
         int exitCode = cli.execute(args);
         System.exit(exitCode);

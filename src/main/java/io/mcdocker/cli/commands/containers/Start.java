@@ -50,9 +50,6 @@ public class Start implements Runnable{
     @Option(names = {"-o", "--output"}, defaultValue = "true", description = "Display Minecraft output")
     boolean output;
 
-    @Option(names = {"-d", "--detached"}, defaultValue = "true", description = "Detach the child process from the main process")
-    boolean detached;
-
     @Override
     public void run() {
         Container container = Container.getContainerById(id);
@@ -71,14 +68,20 @@ public class Start implements Runnable{
             LaunchWrapper launchWrapper = new LaunchWrapper(container, c);
             Process process = launchWrapper.launch(accountFuture.get()).get();
 
-            BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = input.readLine()) != null) System.out.println(line);
-            input.close();
+            System.out.println("PID " + process.pid());
+
+            if(output) {
+                BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String line;
+                while ((line = input.readLine()) != null) System.out.println(line);
+                input.close();
+            }
 
             process.onExit().thenRun(() -> {
                 if(process.exitValue() != 0) {
                     System.err.println("Container exited with error code " + process.exitValue());
+                } else {
+                    System.out.println("Container exited");
                 }
             });
 

@@ -18,7 +18,7 @@
  *
  */
 
-package io.mcdocker.cli.commands;
+package io.mcdocker.cli.commands.containers;
 
 import io.mcdocker.cli.commands.containers.*;
 import picocli.CommandLine.Command;

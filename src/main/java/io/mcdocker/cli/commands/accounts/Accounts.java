@@ -18,7 +18,12 @@
  *
  */
 
-package io.mcdocker.cli.commands;
+package io.mcdocker.cli.commands.accounts;
 
-public class Settings {
+import picocli.CommandLine.Command;
+
+@Command(name = "accounts", description = "Manage accounts", subcommands = {
+        Login.class
+})
+public class Accounts {
 }
