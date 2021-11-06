@@ -21,6 +21,7 @@
 package io.mcdocker.cli.commands.containers;
 
 import io.mcdocker.launcher.auth.Account;
+import io.mcdocker.launcher.auth.AccountsManager;
 import io.mcdocker.launcher.auth.Authentication;
 import io.mcdocker.launcher.auth.impl.OfflineAuth;
 import io.mcdocker.launcher.container.Container;
@@ -58,15 +59,14 @@ public class Start implements Runnable{
             return;
         }
 
-        Authentication auth = new OfflineAuth();
-        CompletableFuture<Account> accountFuture = output ? auth.authenticate(System.out::println) : auth.authenticate();
+        Account account = AccountsManager.getInstance().getCurrentAccount();
 
         VanillaManifest client = container.getDockerfile().getClient(VanillaManifest.class);
 
         try {
             Client<?> c = Client.of(client);
             LaunchWrapper launchWrapper = new LaunchWrapper(container, c);
-            Process process = launchWrapper.launch(accountFuture.get()).get();
+            Process process = launchWrapper.launch(account).get();
 
             System.out.println("PID " + process.pid());
 

@@ -23,7 +23,9 @@ package io.mcdocker.cli.commands.accounts;
 import com.google.gson.GsonBuilder;
 import io.mcdocker.launcher.MCDocker;
 import io.mcdocker.launcher.auth.Account;
+import io.mcdocker.launcher.auth.AccountsManager;
 import io.mcdocker.launcher.auth.impl.MicrosoftAuth;
+import io.mcdocker.launcher.auth.impl.MojangAuth;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -34,19 +36,16 @@ public class Login implements Runnable {
 
     @Command(name = "microsoft", description = "Login with a Microsoft account")
     public void microsoftLogin(@Option(names = {"-o", "--output"}, description = "Output information") boolean output) {
-
-
         MCDocker.startServer();
         MicrosoftAuth auth = new MicrosoftAuth();
 
         CompletableFuture<Account> accountCompletableFuture = output ? auth.authenticate(System.out::println) : auth.authenticate();
 
         CompletableFuture<Account> future = accountCompletableFuture.whenComplete((account, throwable) -> {
-            System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(account));
+            AccountsManager.getInstance().addAccount(account);
         });
 
         future.join();
-
     }
 
     @Option(names = {"-u", "--username"}, description = "Username")
@@ -55,8 +54,21 @@ public class Login implements Runnable {
     @Option(names = {"-p", "--password"}, description = "Password")
     String password;
 
+    @Option(names = {"-o", "--output"}, description = "Output information")
+    boolean output;
+
     @Override
     public void run() {
 
+        // TODO Test whether this works
+
+        MojangAuth auth = new MojangAuth();
+        CompletableFuture<Account> accountCompletableFuture = output ? auth.authenticate(username, password) : auth.authenticate(username, password, System.out::println);
+
+        CompletableFuture<Account> future = accountCompletableFuture.whenComplete((account, throwable) -> {
+            AccountsManager.getInstance().addAccount(account);
+        });
+
+        future.join();
     }
 }
