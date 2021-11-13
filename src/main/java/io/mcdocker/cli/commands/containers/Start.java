@@ -75,6 +75,11 @@ public class Start implements Runnable{
                 String line;
                 while ((line = input.readLine()) != null) System.out.println(line);
                 input.close();
+
+                BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                String errorLine;
+                while ((errorLine = error.readLine()) != null) System.out.println(errorLine);
+                input.close();
             }
 
             process.onExit().thenRun(() -> {
