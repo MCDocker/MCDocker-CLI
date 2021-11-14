@@ -51,6 +51,9 @@ public class Start implements Runnable{
     @Option(names = {"-o", "--output"}, defaultValue = "true", description = "Display Minecraft output")
     boolean output;
 
+    @Option(names = {"-d", "--debug"}, defaultValue = "false", description = "Display debug output")
+    boolean debug;
+
     @Override
     public void run() {
         Container container = Container.getContainerById(id);
@@ -67,8 +70,12 @@ public class Start implements Runnable{
             Client<?> c = Client.of(client);
             LaunchWrapper launchWrapper = new LaunchWrapper(container, c);
             Process process = launchWrapper.launch(account).get();
-
-            System.out.println("PID " + process.pid());
+            
+            if(debug) {
+                System.out.println("PID " + process.pid());
+                System.out.println("Command " + process.info().command().get());
+                System.out.println("Arguments" + process.info().commandLine().get().replace(process.info().command().get(), ""));
+            }
 
             if(output) {
                 BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
