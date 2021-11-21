@@ -22,6 +22,9 @@ package io.mcdocker.cli.commands.containers;
 
 import io.mcdocker.launcher.container.Container;
 import io.mcdocker.launcher.container.Dockerfile;
+import io.mcdocker.launcher.content.clients.ClientManifest;
+import io.mcdocker.launcher.content.clients.impl.fabric.Fabric;
+import io.mcdocker.launcher.content.clients.impl.fabric.FabricManifest;
 import io.mcdocker.launcher.content.clients.impl.vanilla.Vanilla;
 import io.mcdocker.launcher.content.clients.impl.vanilla.VanillaManifest;
 import picocli.CommandLine.Command;
@@ -35,6 +38,9 @@ public class Create implements Runnable {
     @Option(names = {"-v", "--version"}, required = true, description = "The Minecraft version to use")
     private String version;
 
+    @Option(names = {"-t", "--type"}, required = false, defaultValue = "vanilla", description = "The client type (forge, fabric, vanilla, optifine, custom)")
+    private String clientType;
+
     @Option(names = {"-n", "--name"}, description = "The name of the container")
     private String name;
 
@@ -43,15 +49,38 @@ public class Create implements Runnable {
         try {
             Container container = new Container(new Dockerfile());
 
-            VanillaManifest client = container.getDockerfile().getClient(VanillaManifest.class);
-            if (client == null) {
-                client = new Vanilla().getClient(version).join().get().getManifest();
-                container.getDockerfile().setClient(client);
+            // TODO: Improve this code lmfao
+
+            switch (clientType.toLowerCase()) {
+                default:
+                    VanillaManifest vanillaClient = container.getDockerfile().getClient(VanillaManifest.class);
+                    if (vanillaClient == null) {
+                        vanillaClient = new Vanilla().getClient(version).join().get().getManifest();
+                        container.getDockerfile().setClient(vanillaClient);
+                    }
+                    break;
+                case "forge":
+                    break;
+                case "fabric":
+                    FabricManifest fabricClient = container.getDockerfile().getClient(FabricManifest.class);
+                    if (fabricClient == null) {
+                        fabricClient = new Fabric().getClient(version).join().get().getManifest();
+                        container.getDockerfile().setClient(fabricClient);
+                    }
+                    break;
+
+                case "optifine":
+                    break;
+
+                case "custom":
+                    break;
             }
 
             if(name != null) container.getDockerfile().setName(name);
 
             container.save();
+
+            System.out.println("Created container with id '" + container.getDockerfile().getId() + "'");
 
         } catch (IOException e) {
             e.printStackTrace();

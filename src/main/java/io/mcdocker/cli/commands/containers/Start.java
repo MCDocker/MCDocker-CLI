@@ -20,15 +20,16 @@
 
 package io.mcdocker.cli.commands.containers;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.mcdocker.launcher.auth.Account;
 import io.mcdocker.launcher.auth.AccountsManager;
-import io.mcdocker.launcher.auth.Authentication;
-import io.mcdocker.launcher.auth.impl.OfflineAuth;
 import io.mcdocker.launcher.container.Container;
 import io.mcdocker.launcher.content.clients.Client;
 import io.mcdocker.launcher.content.clients.ClientManifest;
-import io.mcdocker.launcher.content.clients.impl.vanilla.Vanilla;
-import io.mcdocker.launcher.content.clients.impl.vanilla.VanillaClient;
+import io.mcdocker.launcher.content.clients.impl.fabric.Fabric;
+import io.mcdocker.launcher.content.clients.impl.fabric.FabricClient;
+import io.mcdocker.launcher.content.clients.impl.fabric.FabricManifest;
 import io.mcdocker.launcher.content.clients.impl.vanilla.VanillaManifest;
 import io.mcdocker.launcher.launch.LaunchWrapper;
 import picocli.CommandLine.Command;
@@ -39,7 +40,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Command(name = "start", description = "Start a container")
@@ -64,7 +64,8 @@ public class Start implements Runnable{
 
         Account account = AccountsManager.getInstance().getCurrentAccount();
 
-        VanillaManifest client = container.getDockerfile().getClient(VanillaManifest.class);
+        // TODO: Add multiple Manifest support (If someone wants to test a different client then replace FabricManifest with for example VanillaManifest)
+        FabricManifest client = container.getDockerfile().getClient(FabricManifest.class);
 
         try {
             Client<?> c = Client.of(client);
