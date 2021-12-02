@@ -36,10 +36,12 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Command(name = "start", description = "Start a container")
@@ -64,11 +66,22 @@ public class Start implements Runnable{
 
         Account account = AccountsManager.getInstance().getCurrentAccount();
 
-        // TODO: Add multiple Manifest support (If someone wants to test a different client then replace FabricManifest with for example VanillaManifest)
-        FabricManifest client = container.getDockerfile().getClient(FabricManifest.class);
+        ClientManifest manifest;
 
         try {
-            Client<?> c = Client.of(client);
+
+            Class<?> client = Class.forName(container.getDockerfile().getClient().get("type").getAsString());
+            switch (client.getSimpleName().toLowerCase()) {
+                case "fabricclient":
+                    manifest = container.getDockerfile().getClient(FabricManifest.class);
+                    break;
+                default:
+                case "vanillaclient":
+                    manifest = container.getDockerfile().getClient(VanillaManifest.class);
+                    break;
+            }
+
+            Client<?> c = Client.of(manifest);
             LaunchWrapper launchWrapper = new LaunchWrapper(container, c);
             Process process = launchWrapper.launch(account).get();
             
@@ -87,7 +100,7 @@ public class Start implements Runnable{
                 BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                 String errorLine;
                 while ((errorLine = error.readLine()) != null) System.out.println(errorLine);
-                input.close();
+                error.close();
             }
 
             process.onExit().thenRun(() -> {
@@ -98,7 +111,7 @@ public class Start implements Runnable{
                 }
             });
 
-        } catch (IOException | InterruptedException | ExecutionException | NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        } catch (InterruptedException | ExecutionException | NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException | ClassNotFoundException | IOException e) {
             e.printStackTrace();
         }
 
